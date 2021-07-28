@@ -10,7 +10,8 @@ using System.IO;
 namespace Network
 {
     //网络链接
-    public class TCPClient : IConnection
+    public delegate void MsgHandler(Message message);
+    public class NetService
     {
         //常量
         const int BUFFER_SIZE = 1024 * 1024 * 4;
@@ -22,16 +23,34 @@ namespace Network
         //沾包分包
         private Int32 msgLength = 0;
         private byte[] lenBytes = new byte[sizeof(Int32)];
-        //消息分发
-        INetworkManager networkManager;
 
-        public TCPClient(INetworkManager manager)
+
+        //消息分发
+        public const int frameMaxDealCount = 30;
+        Dictionary<int, MsgHandler> msgHandlers;
+        public Queue<Message> recMessages;
+        public Queue<Message> sendMessages;
+
+
+        static NetService instance;
+
+        public static NetService GetInstance()
         {
-            networkManager = manager;
+            if (instance != null)
+                return instance;
+            instance = new NetService();
+            return instance;
+        }
+
+        private NetService()
+        {
+            recMessages = new Queue<Message>();
+            sendMessages = new Queue<Message>();
+            msgHandlers = new Dictionary<int, MsgHandler>();
         }
 
         //连接服务端
-        public bool Connect(string ip, int port)
+        public bool Start(string ip, int port)
         {
             try
             {
@@ -157,7 +176,7 @@ namespace Network
             Array.Copy(readBuff, sizeof(Int32), b, 0, msgLength);
             var message = ProtoMsgProtocol.Decoder(b);
             Debug.Log(message.ToString());
-            networkManager.RecevieMsg(message);
+            recMessages.Enqueue(message);
 
             //清除已处理的消息
             int count = buffCount - msgLength - sizeof(Int32);
@@ -188,10 +207,7 @@ namespace Network
 
         public bool Send(Message message)
         {
-            SendTask task = new SendTask();
-            task.client = this;
-            task.message = message;
-            networkManager.SendMsg(task);
+            sendMessages.Enqueue(message);
             return true;
         }
 
@@ -202,5 +218,42 @@ namespace Network
                 return socket.Connected;
             return false;
         }
+
+        public void RegisterHandler(int msgID, MsgHandler handler)
+        {
+            msgHandlers[msgID] = handler;
+        }
+        public void RemoveHandler(int msgID)
+        {
+            if (msgHandlers.ContainsKey(msgID))
+            {
+                msgHandlers.Remove(msgID);
+            }
+        }
+
+        public void Tick()
+        {
+            int count = 0;
+            while (recMessages.Count > 0)
+            {
+                var message = recMessages.Dequeue();
+                MsgHandler msgHandler;
+                if (msgHandlers.TryGetValue(message.msgID, out msgHandler))
+                    msgHandler(message);
+                count++;
+                if (count > frameMaxDealCount)
+                    break;
+            }
+            count = 0;
+            while (sendMessages.Count > 0)
+            {
+                var message = sendMessages.Dequeue();
+                SendImmediately(message);
+                count++;
+                if (count > frameMaxDealCount)
+                    break;
+            }
+        }
+
     }
 }
