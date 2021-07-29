@@ -2,10 +2,10 @@ using UnityEngine;
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
+
+using USC;
 
 namespace Network
 {
@@ -19,10 +19,10 @@ namespace Network
         private Socket socket;
         //Buff
         private byte[] readBuff = new byte[BUFFER_SIZE];
-        private int buffCount = 0;
         //沾包分包
         private Int32 msgLength = 0;
-        private byte[] lenBytes = new byte[sizeof(Int32)];
+
+        CircularBuffer circularBuffer;
 
 
         //消息分发
@@ -47,6 +47,8 @@ namespace Network
             recMessages = new Queue<Message>();
             sendMessages = new Queue<Message>();
             msgHandlers = new Dictionary<int, MsgHandler>();
+
+            circularBuffer = new CircularBuffer(BUFFER_SIZE);
         }
 
         //连接服务端
@@ -108,8 +110,8 @@ namespace Network
                 });
                 socket.ConnectAsync(e);
                 //BeginReceive
-                socket.BeginReceive(readBuff, buffCount,
-                          BUFFER_SIZE - buffCount, SocketFlags.None,
+                socket.BeginReceive(readBuff, 0,
+                          BUFFER_SIZE, SocketFlags.None,
                           ReceiveCb, readBuff);
                 Debug.Log("连接成功");
                 return true;
@@ -146,10 +148,10 @@ namespace Network
             try
             {
                 int count = socket.EndReceive(ar);
-                buffCount = buffCount + count;
-                ProcessData();
-                socket.BeginReceive(readBuff, buffCount,
-                         BUFFER_SIZE - buffCount, SocketFlags.None,
+                circularBuffer.WriteBytes(readBuff, count);
+                DealMessage();
+                socket.BeginReceive(readBuff, 0,
+                         BUFFER_SIZE, SocketFlags.None,
                          ReceiveCb, readBuff);
             }
             catch (Exception e)
@@ -160,31 +162,28 @@ namespace Network
         }
 
         //消息处理
-        private void ProcessData()
+        private void DealMessage()
         {
             //沾包分包处理
-            if (buffCount < sizeof(Int32))
+            if (circularBuffer.GetLength() < sizeof(Int32))
                 return;
+
             //包体长度
-            Array.Copy(readBuff, lenBytes, sizeof(Int32));
-            msgLength = BitConverter.ToInt32(lenBytes, 0);
-            if (buffCount < msgLength + sizeof(Int32))
+            msgLength = circularBuffer.ReadInt();
+            if (circularBuffer.GetLength() < msgLength)
                 return;
-            Debug.Log("Message message = new Message();:");
+
             //协议解码
-            byte[] b = new byte[msgLength];
-            Array.Copy(readBuff, sizeof(Int32), b, 0, msgLength);
+            byte[] b = circularBuffer.ReadBytes(msgLength);
             var message = ProtoMsgProtocol.Decoder(b);
-            Debug.Log(message.ToString());
+
             recMessages.Enqueue(message);
 
-            //清除已处理的消息
-            int count = buffCount - msgLength - sizeof(Int32);
-            Array.Copy(readBuff, sizeof(Int32) + msgLength, readBuff, 0, count);
-            buffCount = count;
-            if (buffCount > 0)
+            Debug.Log(message.ToString());
+
+            if (circularBuffer.GetLength() > 0)
             {
-                ProcessData();
+                DealMessage();
             }
         }
 
