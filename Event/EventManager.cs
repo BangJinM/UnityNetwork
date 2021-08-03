@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UCS.Event
+namespace US.Event
 {
     public class EventManager : IEventManager
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace USAB
+namespace US.AB
 {
 
     public enum PackageType

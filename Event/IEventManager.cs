@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace UCS.Event
+namespace US.Event
 {
     public interface IRegistrations
     {
