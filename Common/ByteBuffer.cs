@@ -4,7 +4,7 @@
 
 using System;
 
-namespace USC
+namespace US.Common
 {
     public class ByteBuffer
     {

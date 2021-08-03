@@ -1,6 +1,6 @@
 using System;
 
-namespace USC
+namespace US.Common
 {
     public class CircularBuffer
     {
@@ -14,7 +14,6 @@ namespace USC
         volatile private int writeIndex;
         //数据
         volatile private byte[] buffer;
-
 
         public CircularBuffer(int capacity)
         {
@@ -174,8 +173,8 @@ namespace USC
 
 
         /**
-                 * 写入一个double类型数据
-                 */
+        * 写入一个double类型数据
+        */
         public void WriteDouble(double value)
         {
             WriteBytes(Flip(BitConverter.GetBytes(value)));
