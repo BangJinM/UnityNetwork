@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using US.Common;
 
 namespace US.Event
 {
-    public class EventManager : IEventManager
+    public class EventManager : Singleton<EventManager>, IEventManager, IManager
     {
         private Dictionary<Type, IRegistrations> mEventRegistrations;
-
-        EventManager()
-        {
-            mEventRegistrations = new Dictionary<Type, IRegistrations>();
-        }
-
 
         public void Send<T>() where T : new()
         {
@@ -56,6 +51,21 @@ namespace US.Event
             {
                 (eventRegistrations as Registrations<T>).OnEvent -= onEvent;
             }
+        }
+
+        public void Init()
+        {
+            mEventRegistrations = new Dictionary<Type, IRegistrations>();
+        }
+
+        public void Update()
+        {
+
+        }
+
+        public void Destroy()
+        {
+            mEventRegistrations.Clear();
         }
     }
 }
