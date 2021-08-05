@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace US.Network
+namespace US
 {
     public class Message
     {

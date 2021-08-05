@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using US.Common;
 
-namespace US.Event
+
+namespace US
 {
-    public class EventManager : Singleton<EventManager>, IEventManager, IManager
+    public class Registrations<T> : IRegistrations
+    {
+        public Action<T> OnEvent = obj => { };
+    }
+    public class EventManager : Singleton<EventManager>, IEventManager
     {
         private Dictionary<Type, IRegistrations> mEventRegistrations;
 
@@ -56,11 +57,6 @@ namespace US.Event
         public void Init()
         {
             mEventRegistrations = new Dictionary<Type, IRegistrations>();
-        }
-
-        public void Update()
-        {
-
         }
 
         public void Destroy()

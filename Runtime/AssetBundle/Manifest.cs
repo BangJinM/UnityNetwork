@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace US.AB
+namespace US
 {
     [System.Serializable]
     public class Bundle

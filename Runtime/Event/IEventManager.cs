@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace US.Event
+namespace US
 {
     public interface IRegistrations
     {
 
     }
-    public class Registrations<T> : IRegistrations
-    {
-        /// <summary>
-        /// 因为委托本身就可以一对多注册
-        /// </summary>
-        public Action<T> OnEvent = obj => { };
-    }
+
     public interface IEventManager
     {
         /// <summary>

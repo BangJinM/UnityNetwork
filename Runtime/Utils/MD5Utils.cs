@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.IO;
 
-namespace US.USMD5
+namespace US
 {
     public class MD5Utils
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace US.Network
+namespace US
 {
     public class ProtoMsgProtocol
     {

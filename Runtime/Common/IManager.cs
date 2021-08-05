@@ -1,18 +1,18 @@
-﻿namespace US.Common
+﻿namespace US
 {
     public interface IManager
     {
         /// <summary>
         /// 初始化
         /// </summary>
-        public void Init();
+        void Init();
         /// <summary>
         /// 更新
         /// </summary>
-        public void Update();
+        void Update();
         /// <summary>
         /// 销毁
         /// </summary>
-        public void Destroy();
+        void Destroy();
     }
 }

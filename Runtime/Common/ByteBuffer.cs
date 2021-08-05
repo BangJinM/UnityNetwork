@@ -4,7 +4,7 @@
 
 using System;
 
-namespace US.Common
+namespace US
 {
     public class ByteBuffer
     {

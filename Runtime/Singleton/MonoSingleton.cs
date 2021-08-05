@@ -1,6 +1,6 @@
-﻿namespace US.Common
+﻿namespace US
 {
-    public class Singleton<T> where T : class, new()
+    public class Singleton<T> where T : Singleton<T>, new()
     {
         public static T instance;
 

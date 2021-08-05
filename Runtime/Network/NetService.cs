@@ -4,9 +4,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Linq;
-using US.Common;
 
-namespace US.Network
+namespace US
 {
     //网络链接
     public delegate void MsgHandler(Message message);
