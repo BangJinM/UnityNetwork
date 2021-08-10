@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-
-
+using UnityEngine;
 namespace US
 {
     public class Registrations<T> : IRegistrations
     {
         public Action<T> OnEvent = obj => { };
     }
-    public class EventManager : Singleton<EventManager>, IEventManager
+    public class EventManager : MonoSingleton<EventManager>, IEventManager
     {
-        private Dictionary<Type, IRegistrations> mEventRegistrations;
+        public Dictionary<Type, IRegistrations> mEventRegistrations;
 
         public void Send<T>() where T : new()
         {

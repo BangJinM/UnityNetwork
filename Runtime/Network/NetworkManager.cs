@@ -10,8 +10,8 @@ namespace US
     {
         public NetService netService;
 
-        public static string ip = "127.0.0.1";
-        public static int port = 23456;
+        public string ip = "127.0.0.1";
+        public int port = 23456;
 
         void Awake()
         {
