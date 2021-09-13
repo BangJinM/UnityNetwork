@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace US
 {
@@ -10,7 +8,6 @@ namespace US
         public override void Load()
         {
             base.Load();
-            mObject = AssetDatabase.LoadAssetAtPath<Object>(mPath);
             Finish();
         }
 

@@ -21,7 +21,7 @@ namespace US
         FINISHED,           // 完成
     }
 
-    public class IResourceLoader
+    public class IResourceLoader : MonoSingleton<IResourceLoader>
     {
         protected Object mObject;
         protected string mPath = "";

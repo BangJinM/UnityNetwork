@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace US
@@ -21,7 +16,7 @@ namespace US
         public override void LoadAsyc()
         {
             base.LoadAsyc();
-            MainManager.Instance.StartCoroutine(ReallyLoadAsync());
+            StartCoroutine(ReallyLoadAsync());
         }
 
         private IEnumerator ReallyLoadAsync()

@@ -172,8 +172,8 @@ namespace US
                 return;
 
             //协议解码
-            byte[] b = circularBuffer.ReadBytes(msgLength);
-            var message = ProtoMsgProtocol.Decoder(b);
+            ByteBuffer byteBuffer = ByteBuffer.Allocate(circularBuffer.ReadBytes(msgLength));
+            var message = ProtoMsgProtocol.Decoder(byteBuffer);
 
             recMessages.Enqueue(message);
 
@@ -194,10 +194,10 @@ namespace US
                 return true;
             }
 
-            byte[] b = ProtoMsgProtocol.Encoder(message);
-            byte[] length = BitConverter.GetBytes(b.Length);
+            ByteBuffer b = ProtoMsgProtocol.Encoder(message);
+            byte[] length = BitConverter.GetBytes(b.GetLength());
 
-            byte[] sendbuff = length.Concat(b).ToArray();
+            byte[] sendbuff = length.Concat(b.Read(b.GetLength())).ToArray();
             socket.Send(sendbuff, sendbuff.Count(), SocketFlags.None);
             return true;
         }

@@ -250,16 +250,10 @@ namespace US
         /**
 	     * 从读取索引位置开始读取len长度的字节数组
 	     */
-        private byte[] Read(int len)
+        public byte[] Read(int len)
         {
             byte[] bytes = new byte[len];
             Array.Copy(buf, readIndex, bytes, 0, len);
-            /*
-			if (BitConverter.IsLittleEndian)
-			{
-				Array.Reverse(bytes);
-			}
-			*/
             readIndex += len;
             return bytes;
         }

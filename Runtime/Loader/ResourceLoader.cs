@@ -17,7 +17,7 @@ namespace US
         public override void LoadAsyc()
         {
             base.LoadAsyc();
-            MainManager.Instance.StartCoroutine(ReallyLoadAsync());
+            StartCoroutine(ReallyLoadAsync());
         }
 
         private IEnumerator ReallyLoadAsync()

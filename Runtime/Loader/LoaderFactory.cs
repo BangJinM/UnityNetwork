@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace US
+﻿namespace US
 {
     public static class LoaderFactory
     {

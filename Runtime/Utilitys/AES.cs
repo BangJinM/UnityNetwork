@@ -21,7 +21,6 @@ namespace US
         {
             if (!File.Exists(path))
                 return;
-
             try
             {
                 using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite))
