@@ -7,18 +7,18 @@ namespace US
     {
         public static bool Loggable = true;
 
-        public static void E(string format, params object[] args)
+        public static void Error(string format, params object[] args)
         {
             Debug.LogErrorFormat(format, args);
         }
 
-        public static void W(string format, params object[] args)
+        public static void Warning(string format, params object[] args)
         {
             Debug.LogWarningFormat(format, args);
         }
 
         [Conditional("DEBUG")]
-        public static void I(string format, params object[] args)
+        public static void Info(string format, params object[] args)
         {
             if (!Loggable) return;
 

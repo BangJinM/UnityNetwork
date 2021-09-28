@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace US
 {
-    class PoolManager:MonoSingleton<PoolManager>
+    public class PoolManager : MonoSingleton<PoolManager>
     {
         private Dictionary<Type, IObjectPool> pools;
 

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace US
 {
     [System.Serializable]
-    public class Bundle
+    public class CustomAssetBundle
     {
         public uint id;
         public long size;
@@ -17,13 +17,7 @@ namespace US
     public class Manifest : ScriptableObject
     {
         public string version;
-        public List<Bundle> bundles = new List<Bundle>();
-        private Dictionary<string, Bundle> nameWithBundles = new Dictionary<string, Bundle>();
-
-        public void Load(string path)
-        {
-            var json = File.ReadAllText(path);
-            JsonUtility.FromJsonOverwrite(json, this);
-        }
+        public List<CustomAssetBundle> bundles = new List<CustomAssetBundle>();
+        private Dictionary<string, CustomAssetBundle> nameWithBundles = new Dictionary<string, CustomAssetBundle>();
     }
 }
