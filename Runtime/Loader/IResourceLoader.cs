@@ -14,12 +14,7 @@ namespace US
         RESOURCES,          // Resource 资源目录
     }
 
-    public enum LoadState
-    {
-        ERROR = -1,         // 
-        LOADING,            // 加载中
-        FINISHED,           // 完成
-    }
+
 
     public class IResourceLoader : MonoSingleton<IResourceLoader>
     {

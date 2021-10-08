@@ -2,15 +2,21 @@
 {
     public class Singleton<T> where T : Singleton<T>, new()
     {
-        public static T instance;
+        protected static T mInstance = null;
 
-        public static T GetInstance()
+        public static T Instance
         {
-            if (instance == null)
+            get
             {
-                instance = new T();
+                {
+                    if (mInstance == null)
+                    {
+                        mInstance = new T();
+                    }
+                    return mInstance;
+                }
             }
-            return instance;
         }
+
     }
 }
