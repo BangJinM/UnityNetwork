@@ -21,12 +21,12 @@ namespace US
 
         public void LoadManifest()
         {
-            var bundle = LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle");
-            TextAsset oj = bundle.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
-            var manifest = ScriptableObject.CreateInstance<Manifest>();
-            JsonUtility.FromJsonOverwrite(oj.text, manifest);
-            AssetBundleDependenceManager.Instance.Init(manifest);
-            UnloadBundle(bundle.name);
+            //var bundle = LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle");
+            //TextAsset oj = bundle.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
+            //var manifest = ScriptableObject.CreateInstance<Manifest>();
+            //JsonUtility.FromJsonOverwrite(oj.text, manifest);
+            //AssetBundleDependenceManager.Instance.Init(manifest);
+            //UnloadBundle(bundle.name);
         }
 
         private void Update()
@@ -36,7 +36,6 @@ namespace US
                 var bundle = _ready2Load[i];
                 if (bundle.loadState == LoadState.INIT)
                 {
-                    bundle.loadState = LoadState.LOADING;
                     bundle.Load();
                     _loading.Add(bundle);
                     _ready2Load.RemoveAt(i);
@@ -46,6 +45,7 @@ namespace US
             for (int i = _loading.Count - 1; i >= 0; i--)
             {
                 var bundle = _loading[i];
+                bundle.Update();
                 if (bundle.loadState == LoadState.FINISHED)
                 {
                     _loading.RemoveAt(i);
@@ -76,6 +76,7 @@ namespace US
             Bundle bundle;
             if (assetBundles.TryGetValue(path, out bundle))
             {
+                assetBundles[path].Retain();
                 return bundle;
             }
             bundle = isAnsyc ? new BundleAsync(path) : new Bundle(path);
@@ -119,5 +120,19 @@ namespace US
             }
         }
 
+        public bool CheckBundleLoad(string bundleName)
+        {
+            Bundle bundle;
+            if (!assetBundles.TryGetValue(bundleName, out bundle))
+                return false;
+            var deps = AssetBundleDependenceManager.Instance.GetDependences(bundleName);
+            foreach (var dep in deps)
+            {
+                Bundle depbundle;
+                if (!assetBundles.TryGetValue(bundleName, out depbundle))
+                    return false;
+            }
+            return true;
+        }
     }
 }

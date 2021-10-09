@@ -1,5 +1,7 @@
-﻿namespace US
+﻿using System;
+namespace US
 {
+   [Serializable]
     public class Reference
     {
         public int refCount = 0;

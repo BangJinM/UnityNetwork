@@ -7,5 +7,6 @@ namespace US
         INIT,               // 初始化
         LOADING,            // 加载中
         FINISHED,           // 完成
+        UNLOAD,
     }
 }

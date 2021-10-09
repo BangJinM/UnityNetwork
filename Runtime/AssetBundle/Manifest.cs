@@ -20,7 +20,7 @@ namespace US
         public List<CustomAssetBundle> bundles = new List<CustomAssetBundle>();
     }
 
-    public class AssetBundleDependenceManager:Singleton<AssetBundleDependenceManager>
+    public class AssetBundleDependenceManager : MonoSingleton<AssetBundleDependenceManager>
     {
         Manifest manifest;
 
@@ -28,12 +28,21 @@ namespace US
         private Dictionary<string, uint> path2ID;
         private Dictionary<string, uint> name2ID;
 
-        public AssetBundleDependenceManager()
+        public void Start()
         {
             path2ID = new Dictionary<string, uint>();
             name2ID = new Dictionary<string, uint>();
             id2Bundles = new Dictionary<uint, CustomAssetBundle>();
+
+            var bundle = AssetBundleManager.Instance.LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle");
+            TextAsset oj = bundle.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
+            var manifest = ScriptableObject.CreateInstance<Manifest>();
+            JsonUtility.FromJsonOverwrite(oj.text, manifest);
+            Init(manifest);
+            AssetBundleManager.Instance.UnloadBundle(bundle.name);
         }
+
+
         public void Init(Manifest manifest)
         {
             this.manifest = manifest;
