@@ -10,7 +10,7 @@ namespace US
         public uint id;
         public long size;
         public uint[] deps;
-        public string path;
+        public string assetName;
         public string abName;
     }
 
@@ -24,34 +24,24 @@ namespace US
     {
         Manifest manifest;
 
-        private Dictionary<uint, CustomAssetBundle> id2Bundles;
-        private Dictionary<string, uint> path2ID;
-        private Dictionary<string, uint> name2ID;
+        private Dictionary<uint, CustomAssetBundle> id2Bundles = new Dictionary<uint, CustomAssetBundle>();
+        private Dictionary<string, uint> path2ID = new Dictionary<string, uint>();
+        private Dictionary<string, CustomAssetBundle> name2Bundles = new Dictionary<string, CustomAssetBundle>();
 
-        public void Start()
+        public void Init()
         {
-            path2ID = new Dictionary<string, uint>();
-            name2ID = new Dictionary<string, uint>();
-            id2Bundles = new Dictionary<uint, CustomAssetBundle>();
-
-            var bundle = AssetBundleManager.Instance.LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle");
-            TextAsset oj = bundle.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
+            Bundle bundleAB = AssetBundleManager.Instance.LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle") as Bundle;
+            TextAsset oj = bundleAB.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
             var manifest = ScriptableObject.CreateInstance<Manifest>();
             JsonUtility.FromJsonOverwrite(oj.text, manifest);
-            Init(manifest);
-            AssetBundleManager.Instance.UnloadBundle(bundle.name);
-        }
-
-
-        public void Init(Manifest manifest)
-        {
             this.manifest = manifest;
             foreach (var bundle in manifest.bundles)
             {
                 id2Bundles[bundle.id] = bundle;
-                path2ID[bundle.path] = bundle.id;
-                name2ID[bundle.abName] = bundle.id;
+                path2ID[bundle.assetName] = bundle.id;
+                name2Bundles[bundle.assetName] = bundle;
             }
+            AssetBundleManager.Instance.UnloadBundle(bundleAB.name);
         }
 
         public List<string> GetDependences(string path)
@@ -66,10 +56,20 @@ namespace US
             foreach (var id in assetBundle.deps)
             {
                 CustomAssetBundle depBundle;
-                if (id2Bundles.TryGetValue(bundleID, out depBundle)) { dependeces.Add(depBundle.path); }
+                if (id2Bundles.TryGetValue(bundleID, out depBundle)) { dependeces.Add(depBundle.assetName); }
             }
 
             return dependeces;
+        }
+
+        public CustomAssetBundle GetBundleAsset(string assetName)
+        {
+            CustomAssetBundle bundleAsset;
+            if (name2Bundles.TryGetValue(assetName, out bundleAsset))
+            {
+                return bundleAsset;
+            }
+            return null;
         }
     }
 }

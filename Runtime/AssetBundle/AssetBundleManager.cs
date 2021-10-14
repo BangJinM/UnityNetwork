@@ -8,26 +8,11 @@ namespace US
     {
         private static readonly int PERFREME_MAX_LOAD_SIZE = 3;
 
-        Dictionary<string, Bundle> assetBundles = new Dictionary<string, Bundle>();
+        Dictionary<string, BundleBase> assetBundles = new Dictionary<string, BundleBase>();
 
-        private static readonly List<Bundle> _unusedBundles = new List<Bundle>();
-        private static readonly List<Bundle> _ready2Load = new List<Bundle>();
-        private static readonly List<Bundle> _loading = new List<Bundle>();
-
-        private void Start()
-        {
-            LoadManifest();
-        }
-
-        public void LoadManifest()
-        {
-            //var bundle = LoadBundle(ABConfig.PlatformBuildPath + "/assets/customassets.bundle");
-            //TextAsset oj = bundle.assetBundle.LoadAsset<TextAsset>("Assets/CustomAssets/file.json");
-            //var manifest = ScriptableObject.CreateInstance<Manifest>();
-            //JsonUtility.FromJsonOverwrite(oj.text, manifest);
-            //AssetBundleDependenceManager.Instance.Init(manifest);
-            //UnloadBundle(bundle.name);
-        }
+        private static readonly List<BundleBase> _unusedBundles = new List<BundleBase>();
+        private static readonly List<BundleBase> _ready2Load = new List<BundleBase>();
+        private static readonly List<BundleBase> _loading = new List<BundleBase>();
 
         private void Update()
         {
@@ -71,15 +56,18 @@ namespace US
             }
         }
 
-        public Bundle LoadBundle(string path, bool isAnsyc = false)
+        public BundleBase LoadBundle(string path, bool isAnsyc = false)
         {
-            Bundle bundle;
+            BundleBase bundle;
             if (assetBundles.TryGetValue(path, out bundle))
             {
                 assetBundles[path].Retain();
                 return bundle;
             }
-            bundle = isAnsyc ? new BundleAsync(path) : new Bundle(path);
+            if (isAnsyc)
+                bundle = new BundleAsync(path);
+            else
+                bundle = new Bundle(path);
             if (isAnsyc)
             {
                 _ready2Load.Add(bundle);
@@ -90,7 +78,6 @@ namespace US
             }
             LoadDependencies(bundle, path, isAnsyc);
             assetBundles[path] = bundle;
-            bundle.Retain();
             return bundle;
         }
 
@@ -102,7 +89,7 @@ namespace US
             }
         }
 
-        public void LoadDependencies(Bundle bundle, string path, bool isAnsyc)
+        public void LoadDependencies(BundleBase bundle, string path, bool isAnsyc)
         {
             var deps = AssetBundleDependenceManager.Instance.GetDependences(path);
             foreach (var dep in deps)
@@ -111,7 +98,7 @@ namespace US
             }
         }
 
-        public void UnloadDependencies(Bundle bundle, string path)
+        public void UnloadDependencies(BundleBase bundle, string path)
         {
             var deps = AssetBundleDependenceManager.Instance.GetDependences(path);
             foreach (var dep in deps)
@@ -122,13 +109,13 @@ namespace US
 
         public bool CheckBundleLoad(string bundleName)
         {
-            Bundle bundle;
+            BundleBase bundle;
             if (!assetBundles.TryGetValue(bundleName, out bundle))
                 return false;
             var deps = AssetBundleDependenceManager.Instance.GetDependences(bundleName);
             foreach (var dep in deps)
             {
-                Bundle depbundle;
+                BundleBase depbundle;
                 if (!assetBundles.TryGetValue(bundleName, out depbundle))
                     return false;
             }

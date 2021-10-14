@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,9 @@ namespace US
 {
     public class AssetManager : MonoSingleton<AssetManager>
     {
-        Dictionary<string, BundleAsset> assets = new Dictionary<string, BundleAsset>();
+        Dictionary<string, USAsset> assets = new Dictionary<string, USAsset>();
 
-        List<BundleAsset> unusedAssets = new List<BundleAsset>();
+        List<USAsset> unusedAssets = new List<USAsset>();
 
         private void Update()
         {
@@ -16,11 +17,9 @@ namespace US
             {
                 var item = asset.Value;
                 if (!item.IsUnused())
-                {
                     item.Update();
-                    continue;
-                }
-                unusedAssets.Add(item);
+                else
+                    unusedAssets.Add(item);
             }
 
             for (var i = 0; i < unusedAssets.Count; i++)
@@ -35,27 +34,38 @@ namespace US
 
         public void UnloadAsset(string assetName)
         {
-            BundleAsset asset;
+            USAsset asset;
             if (assets.TryGetValue(assetName, out asset))
             {
                 asset.Release();
             }
         }
 
-        public BundleAsset LoadAsset(string assetName, Type type, bool isAnysc = false)
+        public USAsset LoadAsset(string assetName, Type type, bool isAnysc = false)
         {
-            BundleAsset asset;
+            USAsset asset;
             if (assets.TryGetValue(assetName, out asset))
             {
                 return asset;
             }
-            asset = isAnysc ? new BundleAnsycAsset(assetName) : new BundleAsset(assetName);
+#if UNITY_EDITOR
+            asset = new AssetDataBaseAsset();
+#else
+            var ab = AssetBundleDependenceManager.Instance.GetBundleAsset(assetName);
+            var abPath = ABConfig.PlatformBuildPath + "/" + ab.abName;
+            abPath.ToLower();
+            if (isAnysc)
+                asset = new BundleAnsycAsset(abPath);
+            else
+                asset = new BundleAsset(abPath);
+#endif
+
             asset.assetName = assetName;
             asset.assetType = type;
             asset.Load();
             asset.Retain();
             assets[assetName] = asset;
-            return null;
+            return asset;
         }
     }
 }

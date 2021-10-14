@@ -51,6 +51,7 @@ namespace US
                     AssetBundleBuild build = new AssetBundleBuild();
                     build.assetBundleName = resPath + bundleFileExt;
                     build.assetNames = new string[] { assetPath };
+                    build.assetBundleName = build.assetBundleName.ToLower();
 
                     if (!bundleList.ContainsKey(build.assetBundleName))
                     {
@@ -81,6 +82,7 @@ namespace US
 
             AssetBundleBuild build = new AssetBundleBuild();
             build.assetBundleName = path + bundleFileExt;
+            build.assetBundleName = build.assetBundleName.ToLower();
             build.assetNames = assetList.ToArray();
 
             if (!bundleList.ContainsKey(build.assetBundleName))
@@ -118,6 +120,7 @@ namespace US
             {
                 AssetBundleBuild build = new AssetBundleBuild();
                 build.assetBundleName = kvp.Key + bundleFileExt;
+                build.assetBundleName = build.assetBundleName.ToLower();
                 build.assetNames = kvp.Value.ToArray();
 
                 if (!bundleList.ContainsKey(build.assetBundleName))
@@ -182,6 +185,7 @@ namespace US
                     {
                         AssetBundleBuild build = new AssetBundleBuild();
                         build.assetBundleName = resPath + bundleFileExt;
+                        build.assetBundleName = build.assetBundleName.ToLower();
                         build.assetNames = new string[] { assetPath };
 
                         if (!bundleList.ContainsKey(build.assetBundleName))
@@ -231,6 +235,7 @@ namespace US
                     {
                         AssetBundleBuild build = new AssetBundleBuild();
                         build.assetBundleName = resPath + bundleFileExt;
+                        build.assetBundleName = build.assetBundleName.ToLower();
                         build.assetNames = new string[] { assetPath };
 
                         if (!bundleList.ContainsKey(build.assetBundleName))
@@ -346,7 +351,7 @@ namespace US
                 {
                     if(assetMap.ContainsKey(path))
                     {
-                        Logger.Error("CollectAssetMap ERROR! path = " + path);
+                        Logger.Error("CollectAssetMap ERROR! assetName = " + path);
                         continue;
                     }    
                     assetMap[path] = assetBundleBuild;
@@ -370,7 +375,7 @@ namespace US
                 foreach (var path in assetBundleBuild.assetNames)
                 {
                     CustomAssetBundle bundle = new CustomAssetBundle();
-                    bundle.path = path;
+                    bundle.assetName = path;
                     bundle.id = CRC32.ComputeCRC32(path);
                     bundle.abName = assetBundleName;
 

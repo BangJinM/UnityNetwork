@@ -2,13 +2,11 @@
 
 namespace US
 {
-    public class Bundle : Reference
+    public class BundleBase : Reference
     {
         public string name;
         public string error;
-        public AssetBundle assetBundle;
         public LoadState loadState;
-
         public virtual bool isDone
         {
             get
@@ -16,44 +14,69 @@ namespace US
                 return true;
             }
         }
-
-        public Bundle(string name)  
+        public BundleBase(string name)
         {
             loadState = LoadState.INIT;
             this.name = name;
         }
 
-        virtual internal void Load()
-        {
-            assetBundle = AssetBundle.LoadFromFile(name);
-            if (assetBundle == null)
-                error = name + " LoadFromFile failed.";
-        }
+        virtual internal void Load() { }
 
-        virtual internal void Unload()
-        {
-            if (assetBundle == null)
-                return;
-            assetBundle.Unload(true);
-            assetBundle = null;
-        }
+        virtual internal void Unload() { }
 
         internal virtual void Update() { }
+
     }
 
-    public class BundleAsync : Bundle
+    public class Bundle : BundleBase
     {
-        private AssetBundleCreateRequest _request;
+        public AssetBundle assetBundle;
 
         public override bool isDone
         {
             get
             {
-                if (loadState == LoadState.INIT || loadState == LoadState.ERROR || loadState == LoadState.LOADING)
+                return true;
+            }
+        }
+
+        public Bundle(string name) : base(name) { }
+
+        internal override void Load()
+        {
+            Retain();
+            assetBundle = AssetBundle.LoadFromFile(name);
+            if (assetBundle == null)
+            {
+                error = name + " LoadFromFile failed.";
+                Release();
+            }
+        }
+
+        internal override void Unload()
+        {
+            if (assetBundle == null)
+                return;
+            Release();
+            if (IsUnused())
+            {
+                assetBundle.Unload(true);
+                assetBundle = null;
+            }
+        }
+    }
+
+    public class BundleAsync : BundleBase
+    {
+        public AssetBundleCreateRequest _request;
+
+        public override bool isDone
+        {
+            get
+            {
+                if (_request == null || !_request.isDone)
                     return false;
-                if (loadState == LoadState.FINISHED)
-                    return true;
-                return _request.isDone;
+                return true;
             }
         }
 
@@ -64,10 +87,12 @@ namespace US
 
         internal override void Load()
         {
+            Retain();
             loadState = LoadState.LOADING;
             _request = AssetBundle.LoadFromFileAsync(name);
             if (_request == null)
             {
+                Release();
                 error = name + " LoadFromFile failed.";
                 return;
             }
@@ -91,5 +116,4 @@ namespace US
             }
         }
     }
-
 }
