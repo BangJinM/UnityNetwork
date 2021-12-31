@@ -1,0 +1,6 @@
+﻿namespace US
+{
+    class LoadBase
+    {
+    }
+}
