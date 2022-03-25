@@ -38,7 +38,7 @@ namespace US.Net
 
         public IPAddress GetIPAddress(string ip, bool isIP4)
         {
-            IPAddress ipAddress;
+            IPAddress ipAddress = null;
             bool isIp = false;
             try
             {
@@ -66,7 +66,7 @@ namespace US.Net
                 }
                 return ipAddress;
             }
-            return null;
+            return ipAddress;
         }
 
         //连接服务端
@@ -117,6 +117,7 @@ namespace US.Net
             Socket s = (Socket)ar.AsyncState;
             s.EndConnect(ar);
             connectDone.Set();
+            NetStateChangedImpl?.Invoke(NetState.Connected);
         }
 
         //关闭连接
@@ -183,13 +184,13 @@ namespace US.Net
             if (!IsConnected())
             {
                 Debug.LogError("is Not Connect!");
-                Close();
                 return false;
             }
 
             ByteBuffer b = ProtoMsgProtocol.Encoder(message);
-            byte[] length = BitConverter.GetBytes(b.GetLength());
-
+            byte[] length = length = BitConverter.GetBytes(b.GetLength());
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(length);
             byte[] sendbuff = length.Concat(b.Read(b.GetLength())).ToArray();
             socket.Send(sendbuff, sendbuff.Count(), SocketFlags.None);
             return true;
