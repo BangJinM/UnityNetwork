@@ -10,8 +10,33 @@ namespace US
     /// </summary>
     public enum LoaderMode
     {
+        /// <summary>
+        /// 异步
+        /// </summary>
         Async,
+        /// <summary>
+        /// 同步
+        /// </summary>
         Sync,
+    }
+
+    /// <summary>
+    /// 协程的状态
+    /// </summary>
+    public enum AsyncStates
+    {
+        /// <summary>
+        ///  无效的
+        /// </summary>
+        INVALID,
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        INITED,
+        /// <summary>
+        /// 完成
+        /// </summary>
+        FINISHED
     }
 
     public delegate void LoaderActionCallBack(bool isOk, object resultObject);
@@ -19,25 +44,41 @@ namespace US
     /// <summary>
     /// 资源加载基类
     /// </summary>
-    public class AbstractResourceLoader : Reference, IAsyncLoader
+    [Serializable]
+    public class AbstractResourceLoader : Reference
     {
-        public object AsyncResult { get; set; }
-        public AsyncStates AsyncState { get; set; }
-        public bool AsyncError { get; set; }
-        public bool IsReadyDestory { get; set; }
-        
+        /// <summary>
+        /// 最终加载结果的资源
+        /// </summary>
+        public object AsyncResult = null;
+
+        /// <summary>
+        /// 是否已经完成
+        /// </summary>
+        public AsyncStates AsyncState = AsyncStates.INVALID;
+
+        /// <summary>
+        /// 标记是否销毁
+        /// </summary>
+        public bool IsReadyDestory = false;
+
+        /// <summary>
+        /// 标记是否报错 
+        /// </summary>
+        public bool AsyncError = false;
+
         /// <summary>
         /// 类型
         /// </summary>
-        public Type RLType { get; set; }
+        public Type RLType = null;
         /// <summary>
         /// 路径
         /// </summary>
-        public string Url { get; private set; }
+        public string Url = "";
         /// <summary>
         /// 百分比
         /// </summary>
-        public virtual float Progress { get; protected set; }
+        public float Progress = 0.0f;
 
         /// <summary>
         /// 成功回调
@@ -50,7 +91,7 @@ namespace US
         /// <typeparam name="T"></typeparam>
         /// <param name="url"></param>
         /// <returns></returns>
-        protected static T NewLoader<T>(string url) where T : AbstractResourceLoader, new()
+        protected static T NewLoader<T>(string url, LoaderActionCallBack callback = null) where T : AbstractResourceLoader, new()
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -63,7 +104,9 @@ namespace US
             loader = new T();
             loader.Retain();
             loader.RLType = typeof(T);
-            loader.Init();
+            loader.Url = url;
+            if (callback != null)
+                loader.afterFinishedCallbacks.Add(callback);
             ResourceManager.Instance.AddResourceLoader(loader);
             return loader as T;
         }
@@ -91,7 +134,7 @@ namespace US
         /// load结束
         /// </summary>
         /// <param name="resultObj"></param>
-        protected virtual void OnFinish(object resultObj)
+        protected virtual void Finish(object resultObj)
         {
             AsyncResult = resultObj;
             AsyncError = AsyncResult == null;
@@ -109,7 +152,7 @@ namespace US
         /// <summary>
         /// 减少引用次数
         /// </summary>
-        /// <param name="gcNow"></param>
+        /// <param name="gcNow"> 是否立即GC </param>
         public virtual void Release(bool gcNow)
         {
             Release();

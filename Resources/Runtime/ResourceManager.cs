@@ -1,29 +1,38 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace US
 {
+    [Serializable]
     public class ResourceManager : MonoSingleton<ResourceManager>
     {
         /// <summary>
         /// 资源
         /// </summary>
-        private readonly Dictionary<Type, Dictionary<string, AbstractResourceLoader>> _loadersPool = new Dictionary<Type, Dictionary<string, AbstractResourceLoader>>();
+        public Dictionary<Type, Dictionary<string, AbstractResourceLoader>> _loadersPool = new Dictionary<Type, Dictionary<string, AbstractResourceLoader>>();
         /// <summary>
         /// 要卸载的资源列表
         /// </summary>
-        private List<AbstractResourceLoader> unusedLoaderPool = new List<AbstractResourceLoader>();
+        public List<AbstractResourceLoader> unusedLoaderPool = new List<AbstractResourceLoader>();
+
+#if UNITY_EDITOR
+
+        /// <summary>
+        /// 在Inspector上显示的
+        /// </summary>
+        public List<AbstractResourceLoader> showInspectors = new List<AbstractResourceLoader>();
+
+#endif
 
         /// <summary>
         /// 最后一次GC时间
         /// </summary>
-        private float lastGcTime = -1;
+        public float lastGcTime = -1;
         /// <summary>
         /// GC间隔
         /// </summary>
-        private static int GCIntervalTime = 1;
+        public static int GCIntervalTime = 1;
 
         /// <summary>
         /// 获取引用次数
@@ -96,9 +105,11 @@ namespace US
         public void AddResourceLoader(AbstractResourceLoader loader)
         {
             Type type = loader.GetType();
-            if (_loadersPool[type] == null)
+            Dictionary<string, AbstractResourceLoader> loaders;
+            if (!_loadersPool.TryGetValue(type, out loaders))
                 _loadersPool[type] = new Dictionary<string, AbstractResourceLoader>();
             _loadersPool[type].Add(loader.Url, loader);
+            ShowInEditor();
         }
         /// <summary>
         /// 移除loader
@@ -111,6 +122,7 @@ namespace US
                 return;
             if(_loadersPool[type].TryGetValue(loader.Url, out loader))
                 _loadersPool[type].Remove(loader.Url);
+            ShowInEditor();
             return;
         }
         /// <summary>
@@ -130,7 +142,7 @@ namespace US
             foreach (var loader in _loadersPool) {
                 foreach (var item in loader.Value)
                 {
-                    if(!item.Value.IsUnused())
+                    if(item.Value.IsUnused())
                         unusedLoaderPool.Add(item.Value);
                 }
             }
@@ -140,7 +152,26 @@ namespace US
                 loader.Dispose();
                 RemoveResourceLoader(loader);
             }
-            unusedLoaderPool.Clear(); 
+            unusedLoaderPool.Clear();
+        }
+
+        void Update()
+        {
+            CheckCollect();
+        }
+
+        void ShowInEditor()
+        {
+#if UNITY_EDITOR
+            showInspectors.Clear();
+            foreach (var key_value in _loadersPool)
+            {
+                foreach(var loader in key_value.Value)
+                {
+                    showInspectors.Add(loader.Value);
+                }
+            }
+#endif
         }
     }
 }

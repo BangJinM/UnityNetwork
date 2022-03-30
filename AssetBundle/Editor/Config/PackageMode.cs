@@ -14,8 +14,17 @@
         /// 一个文件一个包
         /// </summary>
         ONE_FILE2PACKAGE,
+        /// <summary>
+        /// 每个文件夹打成一个包
+        /// </summary>
         SUB_DIR2PACKAGE,
+        /// <summary>
+        /// 每个场景达成一个包
+        /// </summary>
         SCENE2PACKAGE,
+        /// <summary>
+        /// 引用超过2的达成一个包
+        /// </summary>
         REF2PACKAGE,
     }
 }

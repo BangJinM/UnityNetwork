@@ -9,7 +9,8 @@ namespace US
 {
     class AssetBundlePackager
     {
-        public static string bundleFileExt = ".bundle";
+        public static string MANIFEST_JSON_PATH = "Assets/Game/Manifest/minifest.json";
+        public static string bundleFileExt = ".ab";
         public static string resourcesRoot = "";
 
         public static Dictionary<string, AssetBundleBuild> bundleList = new Dictionary<string, AssetBundleBuild>();
@@ -31,7 +32,8 @@ namespace US
                 if (!resSet.Contains(allStr[i]))
                 {
                     string resPath = AssetDatabase.GUIDToAssetPath(allStr[i]);
-                    action(resPath, resPath);
+                    if (File.Exists(resPath))
+                        action(resPath, resPath);
                     resSet.Add(allStr[i]);
                 }
             }
@@ -301,7 +303,7 @@ namespace US
             bundleList.Clear();
             try
             {
-                var abRules = Settings.GetMarkRulesAssetData();
+                var abRules = Utils.GetScriptableObjectAsset<MarkRules>("Assets/Editor/MarkRules.asset");
                 foreach (var config in abRules.abRules)
                 {
                     Logger.Info(config.searchPath + " " + config.searchPattern + " " + config.exclude + " " + config.buildType);
@@ -365,7 +367,7 @@ namespace US
         public static void CollectManifest()
         {
             CollectAssetMap();
-            Manifest manifest = Settings.GetManifestAssetData();
+            Manifest manifest = Utils.GetScriptableObjectAsset<Manifest>("Assets/Game/Manifest/manifest.asset");
             manifest.bundles.Clear();
             foreach (var data in bundleList)
             {
@@ -374,7 +376,7 @@ namespace US
 
                 foreach (var path in assetBundleBuild.assetNames)
                 {
-                    CustomAssetBundle bundle = new CustomAssetBundle();
+                    USAssetBundle bundle = new USAssetBundle();
                     bundle.assetName = path;
                     bundle.id = CRC32.ComputeCRC32(path);
                     bundle.abName = assetBundleName;
@@ -403,9 +405,10 @@ namespace US
                     manifest.bundles.Add(bundle);
                 }
             }
-            var str = JsonUtility.ToJson(manifest);
-            File.WriteAllText(Settings.MANIFEST_JSON_PATH, str);
+            //var str = JsonUtility.ToJson(manifest);
+            //File.WriteAllText(MANIFEST_JSON_PATH, str);
             AssetDatabase.SaveAssets();
+            AddResourcesToOnePackage("Assets/Game/Manifest");
         }
 
     }
