@@ -6,6 +6,7 @@ namespace US
     public class AssetFileLoader : AbstractResourceLoader
     {
         LoaderMode loaderMode;
+        AssetBundleLoader assetBundleLoader;
 
         public static AssetFileLoader Load(string url, LoaderMode loaderMode = LoaderMode.Sync)
         {
@@ -27,9 +28,7 @@ namespace US
             
 #else
 
-
 #endif
-
             AsyncState = AsyncStates.FINISHED;
             yield break;
         }

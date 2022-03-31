@@ -24,23 +24,7 @@ namespace US
             base.Init();
 
             depLoaders = new List<AssetBundleLoader>();
-
-            if (manifest == null)
-                LoadManifest();
-
             ResourceManager.Instance.StartCoroutine(LoadAssetBundle(Url));
-        }
-
-        /// <summary>
-        /// 加载manifest
-        /// </summary>
-        void LoadManifest()
-        {
-            var loader = US.ByteAssetLoader.Load("assets/game/manifest.ab");
-            var ab = AssetBundle.LoadFromMemory(loader.AsyncResult as byte[]);
-            manifest = ab.LoadAsset<US.Manifest>("manifest.asset");
-            manifest.Init();
-            ab.Unload(true);
         }
 
         private IEnumerator LoadAssetBundle(string path)
@@ -74,13 +58,13 @@ namespace US
 
         public void LoadDeps(string path)
         {
-            uint abID = manifest.GetID(path);
-            var depIDs = manifest.GetDeps(abID);
+            uint abID = AssetBundleManager.Instance.GetID(path);
+            var depIDs = AssetBundleManager.Instance.GetDeps(abID);
             if (depIDs != null)
             {
                 foreach (var id in depIDs)
                 {
-                    var bundle = manifest.GetBundle(id);
+                    var bundle = AssetBundleManager.Instance.GetBundle(id);
                     if (bundle != null)
                     {
                         var depLoader = AssetBundleLoader.Load(bundle.abName, loaderMode);

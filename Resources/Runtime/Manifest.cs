@@ -20,19 +20,53 @@ namespace US
     {
         public string version;
         public List<USAssetBundle> bundles = new List<USAssetBundle>();
+    }
+
+    [Serializable]
+    public class AssetBundleManager : MonoSingleton<AssetBundleManager>
+    {
+        public List<USAssetBundle> bundles = new List<USAssetBundle>();
 
         public Dictionary<string, uint> pathIDDict = new Dictionary<string, uint>();
         public Dictionary<uint, USAssetBundle> idBundlsDict = new Dictionary<uint, USAssetBundle>();
 
+
         public bool inited = false;
-        public void Init()
-        {
+
+
+        private void Awake() {
+            LoadManifest();
             foreach (var bundle in bundles)
             {
                 pathIDDict.Add(bundle.abName, bundle.id);
                 idBundlsDict.Add(bundle.id, bundle);
             }
             inited = true;
+        }
+
+        /// <summary>
+        /// 加载manifest
+        /// </summary>
+        void LoadManifest()
+        {
+            var loader = US.ByteAssetLoader.Load("assets/game/manifest.ab");
+            var ab = AssetBundle.LoadFromMemory(loader.AsyncResult as byte[]);
+            var manifest = ab.LoadAsset<US.Manifest>("manifest.asset");
+            bundles = manifest.bundles;
+            ab.Unload(true);
+            loader.Release();
+        }
+
+        public void Init()
+        {
+            LoadManifest();
+            foreach (var bundle in bundles)
+            {
+                pathIDDict.Add(bundle.abName, bundle.id);
+                idBundlsDict.Add(bundle.id, bundle);
+            }
+            inited = true;
+
         }
 
         public uint GetID(string abName)

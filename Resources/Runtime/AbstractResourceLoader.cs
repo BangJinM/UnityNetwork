@@ -162,6 +162,8 @@ namespace US
 
         /// <summary>
         /// 销毁
+        /// 自动调用
+        /// 手动请调用Release 
         /// </summary>
         public virtual void Dispose() { }
 
