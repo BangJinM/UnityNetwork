@@ -98,7 +98,7 @@ namespace US
                 return null;
             }
 
-            AbstractResourceLoader loader = ResourceManager.Instance.GetResourceLoader<T>(url);
+            AbstractResourceLoader loader = ResourceLoaderManager.Instance.GetResourceLoader<T>(url);
             if (loader != null)
                 return loader as T;
             loader = new T();
@@ -107,7 +107,7 @@ namespace US
             loader.Url = url;
             if (callback != null)
                 loader.afterFinishedCallbacks.Add(callback);
-            ResourceManager.Instance.AddResourceLoader(loader);
+            ResourceLoaderManager.Instance.AddResourceLoader(loader);
             return loader as T;
         }
 
@@ -157,7 +157,7 @@ namespace US
         {
             Release();
             if (gcNow) 
-                ResourceManager.Instance.GarbageCollect();
+                ResourceLoaderManager.Instance.GarbageCollect();
         }
 
         /// <summary>

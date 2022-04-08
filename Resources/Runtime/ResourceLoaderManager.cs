@@ -5,7 +5,7 @@ using UnityEngine;
 namespace US
 {
     [Serializable]
-    public class ResourceManager : MonoSingleton<ResourceManager>
+    public class ResourceLoaderManager : MonoSingleton<ResourceLoaderManager>
     {
         /// <summary>
         /// 资源

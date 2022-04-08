@@ -21,7 +21,7 @@ namespace US
         protected override void Init()
         {
             base.Init();
-            ResourceManager.Instance.StartCoroutine(LoadAsset(Url));
+            ResourceLoaderManager.Instance.StartCoroutine(LoadAsset(Url));
         }
 
         public byte[] LoadAssetsSync(string fullPath)

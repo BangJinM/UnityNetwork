@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System;
 using XLua;
 
-namespace US.Net
+namespace US
 {
 
     //配置的详细介绍请看Doc下《XLua的配置.doc》
@@ -21,16 +21,15 @@ namespace US.Net
         public static List<Type> LuaCallCSharp = new List<Type>() {
                 typeof(Message),
                 typeof(TcpSocket),
-                typeof(ProtoMsgProtocol),
-                typeof(SocketClient),
-                typeof(NetState)
+                typeof(DispatchMessageController),
+                typeof(TCPSocketStatus)
             };
 
         //C#静态调用Lua的配置（包括事件的原型），仅可以配delegate，interface
         [CSharpCallLua]
         public static List<Type> CSharpCallLua = new List<Type>()
         {
-            typeof(NetStateChanged),
+            typeof(Action<TCPSocketStatus>),
             typeof(MsgHandler),
         };
 

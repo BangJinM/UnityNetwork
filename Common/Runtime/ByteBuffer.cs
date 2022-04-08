@@ -287,7 +287,7 @@ namespace US
 	     */
         public int ReadInt()
         {
-            return BitConverter.ToInt32(Read(4), 0);
+            return BitConverter.ToInt32(Flip(Read(4)), 0);
         }
 
         /**

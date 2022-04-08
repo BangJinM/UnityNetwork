@@ -6,26 +6,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace US.Net
+namespace US
 {
+    public enum TCPSocketStatus
+    {
+        Undefined = -1,
+        Connected,
+        Close,
+    }
+
     public abstract class SocketBase
     {
         protected const int BUFFER_SIZE = 1024 * 1024 * 4;
 
-        //消息分发
-        public int frameMaxDealCount = 30;
-        public Queue<Message> recMessages = new Queue<Message>();
-        public Queue<Message> sendMessages = new Queue<Message>();
-
-        public NetStateChanged NetStateChangedImpl;
+        public Action<TCPSocketStatus> SocketStatusChangedImpl;
         protected Int32 msgLength = 0;
         protected int buffCount = 0;
         protected byte[] readBuff = new byte[BUFFER_SIZE];
         protected byte[] lenBytes = new byte[sizeof(Int32)];
 
+        public void SetSocketStatusChangedImpl(Action<TCPSocketStatus> action)
+        {
+            this.SocketStatusChangedImpl = action;
+        }
         public abstract bool Connect(string ip, int port);
         public abstract bool Close();
-        public abstract bool SendMsg(Message message);
+        public abstract bool SendMsg(Message message, bool isDelay = true);
         public abstract bool IsConnected();
     }
 
@@ -94,14 +100,6 @@ namespace US.Net
                 IPEndPoint ipEndPoint = new IPEndPoint(ipAddress, (int)port);
 
                 IAsyncResult result = socket.BeginConnect(ipEndPoint, ConnectedCallback, socket);
-                connectDone.WaitOne(1000, true);
-                if (!socket.Connected)
-                {
-                    Debug.Log("Connect to Server Timeout");
-                    return false;
-                }
-                socket.BeginReceive(readBuff, buffCount, BUFFER_SIZE - buffCount, SocketFlags.None, ReceiveMsg, readBuff);
-                Debug.Log("BeginReceive");
                 return true;
             }
             catch (Exception e)
@@ -114,10 +112,19 @@ namespace US.Net
 
         public void ConnectedCallback(IAsyncResult ar)
         {
-            Socket s = (Socket)ar.AsyncState;
-            s.EndConnect(ar);
-            connectDone.Set();
-            NetStateChangedImpl?.Invoke(NetState.Connected);
+            try
+            {
+                Socket s = (Socket)ar.AsyncState;
+                s.EndConnect(ar);
+                socket.BeginReceive(readBuff, buffCount, BUFFER_SIZE - buffCount, SocketFlags.None, ReceiveMsg, readBuff);
+                Debug.Log("BeginReceive");
+                SocketStatusChangedImpl?.Invoke(TCPSocketStatus.Connected);
+            }
+            catch (Exception e)
+            {
+                Close();
+                Debug.Log("连接失败:" + e.Message);
+            }
         }
 
         //关闭连接
@@ -128,7 +135,7 @@ namespace US.Net
                 socket.Shutdown(SocketShutdown.Both);
                 socket.Close();
             }
-            NetStateChangedImpl?.Invoke(NetState.Close);
+            SocketStatusChangedImpl?.Invoke(TCPSocketStatus.Close);
             socket = null;
             return true;
         }
@@ -158,6 +165,8 @@ namespace US.Net
                 return;
             //包体长度
             Array.Copy(readBuff, lenBytes, sizeof(Int32));
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(lenBytes);
             msgLength = BitConverter.ToInt32(lenBytes, 0);
             if (buffCount < msgLength + sizeof(Int32))
                 return;
@@ -166,8 +175,8 @@ namespace US.Net
             Array.Copy(readBuff, sizeof(Int32), b, 0, msgLength);
             ByteBuffer byteBuffer = ByteBuffer.Allocate(b);
 
-            var message = ProtoMsgProtocol.Decoder(byteBuffer);
-            recMessages.Append(message);
+            var message = Message.Decoder(byteBuffer);
+            DispatchMessageController.Instance.ReceiveMessage(message);
 
             //清除已处理的消息
             int count = buffCount - msgLength - sizeof(Int32);
@@ -179,7 +188,7 @@ namespace US.Net
             }
         }
 
-        public override bool SendMsg(Message message)
+        public override bool SendMsg(Message message, bool isDelay = true)
         {
             if (!IsConnected())
             {
@@ -187,12 +196,22 @@ namespace US.Net
                 return false;
             }
 
-            ByteBuffer b = ProtoMsgProtocol.Encoder(message);
-            byte[] length = length = BitConverter.GetBytes(b.GetLength());
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(length);
-            byte[] sendbuff = length.Concat(b.Read(b.GetLength())).ToArray();
-            socket.Send(sendbuff, sendbuff.Count(), SocketFlags.None);
+            DispatchMessageController.Instance.SendMessage(message, (Message sendMsg) =>
+            {
+                if (!IsConnected())
+                {
+                    Debug.LogError("is Not Connect!");
+                    return;
+                }
+
+                ByteBuffer b = Message.Encoder(sendMsg);
+                byte[] length = length = BitConverter.GetBytes(b.GetLength());
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(length);
+                byte[] sendbuff = length.Concat(b.Read(b.GetLength())).ToArray();
+                socket.Send(sendbuff, sendbuff.Count(), SocketFlags.None);
+            }, isDelay);
+
             return true;
         }
 

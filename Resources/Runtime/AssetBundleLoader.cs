@@ -24,7 +24,7 @@ namespace US
             base.Init();
 
             depLoaders = new List<AssetBundleLoader>();
-            ResourceManager.Instance.StartCoroutine(LoadAssetBundle(Url));
+            ResourceLoaderManager.Instance.StartCoroutine(LoadAssetBundle(Url));
         }
 
         private IEnumerator LoadAssetBundle(string path)

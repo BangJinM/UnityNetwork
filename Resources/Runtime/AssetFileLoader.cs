@@ -19,7 +19,7 @@ namespace US
         protected override void Init()
         {
             base.Init();
-            ResourceManager.Instance.StartCoroutine(LoadAssetBundle(Url));
+            ResourceLoaderManager.Instance.StartCoroutine(LoadAssetBundle(Url));
         }
 
         private IEnumerator LoadAssetBundle(string path)
